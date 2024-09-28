@@ -3,12 +3,12 @@ import { basename } from 'node:path';
 
 import chalk from 'chalk';
 import { dedent } from 'ts-dedent';
+import { parseDocument, DomUtils } from 'htmlparser2';
 
 import type { Fix } from '../types';
 
 const MDX1_STYLE_START = /<style>{`/g;
 const MDX1_STYLE_END = /`}<\/style>/g;
-const MDX1_COMMENT = /<!--(.+)-->/g;
 const MDX1_CODEBLOCK = /(?:\n~~~(?:\n|.)*?\n~~~)|(?:\n```(?:\n|.)*?\n```)/g;
 
 export const fixMdxStyleTags = (mdx: string) => {
@@ -21,7 +21,13 @@ export const fixMdxComments = (mdx: string) => {
   // separate the mdx into sections without codeblocks & replace html comments NOT in codeblocks
   const sections = mdx
     .split(MDX1_CODEBLOCK)
-    .map((v) => v.replace(MDX1_COMMENT, (original, group) => `{/*${group}*/}`));
+    .map((v) => {
+      const doc = parseDocument(v);
+      DomUtils.findAll((elem) => elem.type === 'comment', doc).forEach((comment) => {
+        comment.data = `{/*${comment.data}*/}`;
+      });
+      return DomUtils.getOuterHTML(doc);
+    });
 
   // interleave the original codeblocks with the replaced sections
   return sections.reduce((acc, item, i) => {
