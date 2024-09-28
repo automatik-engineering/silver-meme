@@ -1,7 +1,7 @@
 # Code Owners
 
 # Root
-# .github/    @JReinhold @yannbf @vanessayuenn
+# .github/    @JReinhold @yannbf @vanessayuenn @akabarki
 # .circleci/  @yannbf @kasperpeulen
 # .yarnrc.yml @ndelangen @JReinhold
 
