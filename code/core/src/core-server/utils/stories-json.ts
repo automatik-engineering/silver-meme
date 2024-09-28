@@ -65,8 +65,9 @@ export function useStoriesJson({
       res.header('Content-Type', 'application/json');
       res.send(JSON.stringify(index));
     } catch (err) {
+      console.error('Error occurred while processing /index.json request:', err);
       res.status(500);
-      res.send(err instanceof Error ? err.toString() : String(err));
+      res.send('An internal server error occurred');
     }
   });
 }
