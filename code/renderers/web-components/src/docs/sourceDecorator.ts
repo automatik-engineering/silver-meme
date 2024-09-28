@@ -49,7 +49,12 @@ export function sourceDecorator(
     } else {
       render(renderedForSource, container);
     }
-    source = container.innerHTML.replace(LIT_EXPRESSION_COMMENTS, '');
+    let previousSource;
+    source = container.innerHTML;
+    do {
+      previousSource = source;
+      source = source.replace(LIT_EXPRESSION_COMMENTS, '');
+    } while (source !== previousSource);
   }
 
   return story;
