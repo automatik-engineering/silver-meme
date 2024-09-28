@@ -1,5 +1,6 @@
 import { existsSync } from 'node:fs';
 import { basename, isAbsolute, posix, resolve, sep, win32 } from 'node:path';
+import rateLimit from 'express-rate-limit';
 
 import { getDirectoryFromWorkingDir } from '@storybook/core/common';
 import type { Options } from '@storybook/core/types';
@@ -50,7 +51,12 @@ export async function useStatics(router: Router, options: Options) {
     );
   }
 
-  router.get(`/${basename(faviconPath)}`, (req, res) => res.sendFile(faviconPath));
+  const faviconLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 100, // limit each IP to 100 requests per windowMs
+  });
+
+  router.get(`/${basename(faviconPath)}`, faviconLimiter, (req, res) => res.sendFile(faviconPath));
 }
 
 export const parseStaticDir = async (arg: string) => {
