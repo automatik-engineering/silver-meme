@@ -289,7 +289,8 @@
     "recast": "^0.23.5",
     "semver": "^7.6.2",
     "util": "^0.12.5",
-    "ws": "^8.2.3"
+    "ws": "^8.2.3",
+    "express-rate-limit": "^7.4.0"
   },
   "devDependencies": {
     "@aw-web-design/x-default-browser": "1.4.126",

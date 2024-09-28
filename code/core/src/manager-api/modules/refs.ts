@@ -95,7 +95,7 @@ export const getSourceType = (source: string, refId?: string) => {
 };
 
 export const defaultStoryMapper: API_StoryMapper = (b: any, a: any) => {
-  return { ...a, kind: a.kind.replace('|', '/') };
+  return { ...a, kind: a.kind.replace(/\|/g, '/') };
 };
 
 const addRefIds = (input: API_IndexHash, ref: API_ComposedRef): API_IndexHash => {

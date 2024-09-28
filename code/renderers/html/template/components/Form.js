@@ -1,3 +1,5 @@
+import DOMPurify from 'dompurify';
+
 export const Form = ({ onSuccess }) => {
   const container = document.createElement('div');
 
@@ -19,14 +21,15 @@ export const Form = ({ onSuccess }) => {
     e.preventDefault();
 
     const { value } = form.querySelector('input'); // Store the current value
+    const sanitizedValue = DOMPurify.sanitize(value); // Sanitize the value
 
     setTimeout(() => {
-      container.innerHTML = getInnerHTML({ complete: true, value });
+      container.innerHTML = getInnerHTML({ complete: true, value: sanitizedValue });
     }, 500);
     setTimeout(() => {
-      container.innerHTML = getInnerHTML({ complete: false, value });
+      container.innerHTML = getInnerHTML({ complete: false, value: sanitizedValue });
     }, 1500);
-    onSuccess(value);
+    onSuccess(sanitizedValue);
   });
 
   return container;

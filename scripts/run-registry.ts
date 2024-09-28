@@ -1,4 +1,4 @@
-import { exec } from 'node:child_process';
+import { execFile } from 'node:child_process';
 import { mkdir } from 'node:fs/promises';
 import http from 'node:http';
 import type { Server } from 'node:http';
@@ -51,7 +51,12 @@ const startVerdaccio = async () => {
       const proxy = http.createServer((req, res) => {
         // if request contains "storybook" redirect to verdaccio
         if (req.url?.includes('storybook') || req.url?.includes('/sb') || req.method === 'PUT') {
-          res.writeHead(302, { Location: 'http://localhost:6002' + req.url });
+          const targetUrl = 'http://localhost:6002' + req.url;
+          if (isLocalUrl(targetUrl)) {
+            res.writeHead(302, { Location: targetUrl });
+          } else {
+            res.writeHead(302, { Location: 'http://localhost:6002' });
+          }
           res.end();
         } else {
           // forward to npm registry
@@ -96,6 +101,14 @@ const startVerdaccio = async () => {
   ]) as Promise<Server>;
 };
 
+const isLocalUrl = (path: string) => {
+  try {
+    return new URL(path, 'http://localhost:6002').origin === 'http://localhost:6002';
+  } catch (e) {
+    return false;
+  }
+};
+
 const currentVersion = async () => {
   const { version } = await readJSON(join(__dirname, '..', 'code', 'package.json'));
   return version;
@@ -133,17 +146,40 @@ const publish = async (packages: { name: string; location: string }[], url: stri
             );
 
             const tarballFilename = `${name.replace('@', '').replace('/', '-')}.tgz`;
-            const command = `cd ${resolvePath(
-              '../code',
-              location
-            )} && yarn pack --out=${PACKS_DIRECTORY}/${tarballFilename} && cd ${PACKS_DIRECTORY} && npm publish ./${tarballFilename} --registry ${url} --force --ignore-scripts`;
-            exec(command, (e) => {
+            const tarballPath = `${PACKS_DIRECTORY}/${tarballFilename}`;
+            const command = 'yarn';
+            const args = [
+              'pack',
+              `--out=${tarballPath}`
+            ];
+            const options = {
+              cwd: resolvePath('../code', location)
+            };
+            execFile(command, args, options, (e) => {
               if (e) {
                 rej(e);
               } else {
-                i += 1;
-                logger.log(`${i}/${packages.length} 🛬 successful publish of ${name}!`);
-                res(undefined);
+                const publishCommand = 'npm';
+                const publishArgs = [
+                  'publish',
+                  `./${tarballFilename}`,
+                  '--registry',
+                  url,
+                  '--force',
+                  '--ignore-scripts'
+                ];
+                const publishOptions = {
+                  cwd: PACKS_DIRECTORY
+                };
+                execFile(publishCommand, publishArgs, publishOptions, (e) => {
+                  if (e) {
+                    rej(e);
+                  } else {
+                    i += 1;
+                    logger.log(`${i}/${packages.length} 🛬 successful publish of ${name}!`);
+                    res(undefined);
+                  }
+                });
               }
             });
           })

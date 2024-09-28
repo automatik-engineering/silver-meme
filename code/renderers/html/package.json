@@ -51,7 +51,8 @@
     "@storybook/manager-api": "workspace:^",
     "@storybook/preview-api": "workspace:^",
     "@storybook/theming": "workspace:^",
-    "ts-dedent": "^2.0.0"
+    "ts-dedent": "^2.0.0",
+    "dompurify": "^3.1.7"
   },
   "devDependencies": {
     "typescript": "^5.3.2"
